@@ -15,9 +15,12 @@ class Summary():
         self.skewness = (df.z_score**3).sum() / total_days
         self.kurtosis = (df.z_score**4).sum() / total_days
         
+    def __str__(self):
+        return f'Mean: {self.mean:.4g}. Standard deviation: {self.stddev:.4g}. Skewness: {self.skewness:.4g}. Kurtosis: {self.kurtosis:.4g}.'
+        
     def _ipython_display_(self):
         from IPython.display import display
-        print(f'Mean: {self.mean:.4g}. Standard deviation: {self.stddev:.4g}. Skewness: {self.skewness:.4g}. Kurtosis: {self.kurtosis:.4g}.')
+        print(self.__str__())
         display(self.dataframe)
         
     def plot_empirical_cdf(self):
