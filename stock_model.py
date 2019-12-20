@@ -10,6 +10,9 @@ class NigModel:
         self.mu = mu
         self.delta = delta
         
+        self.scale = math.sqrt(delta)
+        self.loc = mu * self.scale
+        
         gamma = math.sqrt(alpha**2 - beta**2)
 
         self.mean = mu + delta * beta / gamma
@@ -53,13 +56,13 @@ class NigModel:
         if do_print:
             print(optimization)
             
-        alpha, beta, mu, delta = optimization.x
+        alpha, beta, loc, scale = optimization.x
             
-        return NigModel(alpha, beta, mu, delta, self.stock)
+        return NigModel(alpha, beta, loc / scale, scale**2, self.stock)
     
     def plot_comparison(self):
         def cdf(x):
-            return norminvgauss.cdf(x, self.alpha, self.beta, self.mu, self.delta)
+            return norminvgauss.cdf(x, self.alpha, self.beta, self.loc, self.scale)
 
         pyplot.clf()
         pyplot.figure(figsize=(17,11))
@@ -68,4 +71,4 @@ class NigModel:
         pyplot.show()
         
     def scipy_stats(self):
-        return norminvgauss.stats(self.alpha, self.beta, self.mu, self.delta, moments='mvsk')
+        return norminvgauss.stats(self.alpha, self.beta, self.loc, self.scale, moments='mvsk')
