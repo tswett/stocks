@@ -10,8 +10,8 @@ class NigModel:
         self.mu = mu
         self.delta = delta
         
-        self.scale = math.sqrt(delta)
-        self.loc = mu * self.scale
+        self.scipy_alpha = delta * alpha
+        self.scipy_beta = delta * beta
         
         gamma = math.sqrt(alpha**2 - beta**2)
 
@@ -46,23 +46,23 @@ class NigModel:
         
     def reoptimize(self, do_print=False):
         def evaluate(params):
-            alpha, beta, loc, scale = params
-            return -norminvgauss.logpdf(self.sorted_gains, alpha, beta, loc, scale).sum()
+            scipy_alpha, scipy_beta, mu, delta = params
+            return -norminvgauss.logpdf(self.sorted_gains, scipy_alpha, scipy_beta, mu, delta).sum()
         
-        starting_point = [self.alpha, self.beta, self.mu, self.delta]
+        starting_point = [self.scipy_alpha, self.scipy_beta, self.mu, self.delta]
         bounds = [(0,None),(-2,2),(None,None),(None,None)]
         optimization = minimize(evaluate, starting_point, bounds=bounds)
         
         if do_print:
             print(optimization)
             
-        alpha, beta, loc, scale = optimization.x
+        scipy_alpha, scipy_beta, mu, delta = optimization.x
             
-        return NigModel(alpha, beta, loc / scale, scale**2, self.stock)
+        return NigModel(scipy_alpha / delta, scipy_beta / delta, mu, delta, self.stock)
     
     def plot_comparison(self):
         def cdf(x):
-            return norminvgauss.cdf(x, self.alpha, self.beta, self.loc, self.scale)
+            return norminvgauss.cdf(x, self.scipy_alpha, self.scipy_beta, self.mu, self.delta)
 
         pyplot.clf()
         pyplot.figure(figsize=(17,11))
@@ -71,4 +71,4 @@ class NigModel:
         pyplot.show()
         
     def scipy_stats(self):
-        return norminvgauss.stats(self.alpha, self.beta, self.loc, self.scale, moments='mvsk')
+        return norminvgauss.stats(self.scipy_alpha, self.scipy_beta, self.mu, self.delta, moments='mvsk')
