@@ -1,6 +1,7 @@
 from distributions import NigDistribution
 import math
 from matplotlib import pyplot
+import numpy
 from scipy.stats import norm, norminvgauss
 from scipy.optimize import minimize
 
