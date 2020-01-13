@@ -26,12 +26,37 @@ class NigDistribution:
         # Eriksson et al., 2009
         
         rho = 3 * excess_kurt / skewness**2 - 4
-        print(f'rho is {rho}')
         
         alpha = 3 * (4 / rho + 1) / math.sqrt(1 - 1 / rho) / excess_kurt
         beta = 3 * math.copysign(1, skewness) * (4 / rho + 1) / math.sqrt(rho - 1) / excess_kurt
         mu = mean - math.copysign(1, skewness) * math.sqrt(3 / rho * (4 / rho + 1) / excess_kurt * variance)
         delta = math.sqrt(3 * (4 / rho + 1) * (1 - 1 / rho) / excess_kurt * variance)
+        
+        gamma = math.sqrt(alpha ** 2 - beta ** 2)
+        
+        print(f'rho is {rho}')
+        print(f'delta gamma is {delta * gamma}')
+        print(f'beta over alpha is {beta / alpha}')
+        
+        return NigDistribution(alpha, beta, mu, delta)
+    
+    @staticmethod
+    def from_moments_fixed(mean, variance, skewness, excess_kurt):
+        # Source: I solved the equations from Wikipedia myself.
+        
+        rho = 3 * excess_kurt / skewness**2 - 4
+        delta_gamma = 9 / (skewness**2 * rho)
+        beta_over_alpha = math.copysign(1 / math.sqrt(rho), skewness)
+        
+        print(f'rho is {rho}')
+        print(f'delta gamma is {delta_gamma}')
+        print(f'beta over alpha is {beta_over_alpha}')
+        
+        beta = 3 / (skewness * (rho - 1) * math.sqrt(variance))
+        alpha = abs(beta) * math.sqrt(rho)
+        gamma = abs(beta) * math.sqrt(rho - 1)
+        delta = 9 / (skewness**2 * rho * gamma)
+        mu = mean - (beta * delta) / gamma
         
         return NigDistribution(alpha, beta, mu, delta)
     
