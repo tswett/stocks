@@ -32,20 +32,3 @@ class NigDistribution:
         mu = mean - (beta * delta) / gamma
         
         return NigDistribution(alpha, beta, mu, delta)
-    
-    #@staticmethod
-    #def from_moments_solver(mean, variance, skewness, excess_kurt):
-    #    def evaluate(params):
-    #        alpha, beta_over_alpha, mu, delta = params
-    #        return -norminvgauss.logpdf(self.sorted_gains, alpha, beta, loc, scale).sum()
-    #    
-    #    starting_point = [self.alpha, self.beta, self.mu, self.delta]
-    #    bounds = [(0,None),(-2,2),(None,None),(None,None)]
-    #    optimization = minimize(evaluate, starting_point, bounds=bounds)
-    #    
-    #    if do_print:
-    #        print(optimization)
-    #        
-    #    alpha, beta, loc, scale = optimization.x
-    #        
-    #    return NigModel(alpha, beta, loc / scale, scale**2, self.stock)

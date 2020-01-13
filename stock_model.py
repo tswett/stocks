@@ -1,66 +1,70 @@
+from distributions import NigDistribution
 import math
 from matplotlib import pyplot
 from scipy.stats import norm, norminvgauss
 from scipy.optimize import minimize
 
 class NigModel:
-    def __init__(self, alpha, beta, mu, delta, stock):
-        self.alpha = alpha
-        self.beta = beta
-        self.mu = mu
-        self.delta = delta
-        
-        self.scipy_alpha = delta * alpha
-        self.scipy_beta = delta * beta
-        
-        gamma = math.sqrt(alpha**2 - beta**2)
-
-        self.mean = mu + delta * beta / gamma
-        self.variance = delta * alpha**2 / gamma**3
-        self.stddev = math.sqrt(self.variance)
-        self.skewness = 3 * beta / alpha / math.sqrt(delta * gamma)
-        self.kurtosis = 3 + 3 * (1 + 4 * beta**2 / alpha**2) / delta / gamma
-        
+    def __init__(self, dist, stock):
+        self.dist = dist
         self.stock = stock
+        
+        self.alpha = dist.alpha
+        self.beta = dist.beta
+        self.mu = dist.mu
+        self.delta = dist.delta
+        
+        self.scipy_alpha = dist.delta * dist.alpha
+        self.scipy_beta = dist.delta * dist.beta
+        
+        self.mean = dist.mean
+        self.variance = dist.variance
+        self.stddev = dist.stddev
+        self.skewness = dist.skewness
+        self.kurtosis = dist.kurtosis
+        
         self.sorted_gains = stock.log_pct_gain.sort_values()
         
     @staticmethod
-    def from_stock_moments(stock):
-        # Formula from "The Normal Inverse Gaussian Distribution and the Pricing of Derivatives",
-        # Eriksson et al., 2009
+    def from_parameters(alpha, beta, mu, delta, stock):
+        dist = NigDistribution(alpha, beta, mu, delta)
+        return NigModel(dist, stock)
         
+    @staticmethod
+    def from_stock_moments(stock):
         mean = stock.summary.mean
         variance = stock.summary.variance
         skewness = stock.summary.skewness
         excess_kurt = stock.summary.kurtosis - 3
         
-        rho = 3 * excess_kurt / skewness**2 - 4
-        print(f'rho is {rho}')
+        dist = NigDistribution.from_moments(mean, variance, skewness, excess_kurt)
         
-        alpha = 3 * (4 / rho + 1) / math.sqrt(1 - 1 / rho) / excess_kurt
-        beta = 3 * math.copysign(1, skewness) * (4 / rho + 1) / math.sqrt(rho - 1) / excess_kurt
-        mu = mean - math.copysign(1, skewness) * math.sqrt(3 / rho * (4 / rho + 1) / excess_kurt * variance)
-        delta = math.sqrt(3 * (4 / rho + 1) * (1 - 1 / rho) / excess_kurt * variance)
-        
-        return NigModel(alpha, beta, mu, delta, stock)
+        return NigModel(dist, stock)
         
     def reoptimize(self, do_print=False):
+        dist = self.dist
+        
         def evaluate(params):
-            scipy_alpha, scipy_beta, mu, delta = params
+            alpha, beta_over_alpha, mu, delta = params
+            beta = beta_over_alpha * alpha
+            scipy_alpha = delta * alpha
+            scipy_beta = delta * beta
             return -norminvgauss.logpdf(self.sorted_gains, scipy_alpha, scipy_beta, mu, delta).sum()
         
-        starting_point = [self.scipy_alpha, self.scipy_beta, self.mu, self.delta]
-        bounds = [(0,None),(-2,2),(None,None),(None,None)]
+        starting_point = [self.alpha, self.beta / self.alpha, self.mu, self.delta]
+        bounds = [(0,None),(-1,1),(None,None),(None,None)]
         optimization = minimize(evaluate, starting_point, bounds=bounds)
         
         if do_print:
             print(optimization)
             
-        scipy_alpha, scipy_beta, mu, delta = optimization.x
+        alpha, beta_over_alpha, mu, delta = optimization.x
             
-        return NigModel(scipy_alpha / delta, scipy_beta / delta, mu, delta, self.stock)
+        return NigModel.from_parameters(alpha, beta_over_alpha * alpha, mu, delta, self.stock)
     
     def plot_comparison(self):
+        dist = self.dist
+        
         def cdf(x):
             return norminvgauss.cdf(x, self.scipy_alpha, self.scipy_beta, self.mu, self.delta)
 
@@ -71,4 +75,6 @@ class NigModel:
         pyplot.show()
         
     def scipy_stats(self):
+        dist = self.dist
+        
         return norminvgauss.stats(self.scipy_alpha, self.scipy_beta, self.mu, self.delta, moments='mvsk')
