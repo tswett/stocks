@@ -11,7 +11,7 @@ class Stock:
         self.summary = Summary(self.log_pct_gain, self.cal_days)
         
     def __str__(self):
-        return f"<Stock '{self}'>"
+        return f"<Stock '{self.symbol}'>"
     
     def plot_empirical_cdf(self):
         self.summary.plot_empirical_cdf()

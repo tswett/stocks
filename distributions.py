@@ -10,6 +10,11 @@ class NigDistribution:
         self.delta = delta
         
         self.gamma = gamma = math.sqrt(alpha**2 - beta**2)
+        
+        scipy_alpha = delta * alpha
+        scipy_beta = delta * beta
+        
+        self.scipy_dist = norminvgauss(scipy_alpha, scipy_beta, mu, delta)
 
         # Moment formulas from Wikipedia.
         self.mean = mu + delta * beta / gamma
@@ -33,3 +38,8 @@ class NigDistribution:
         mu = mean - (beta * delta) / gamma
         
         return NigDistribution(alpha, beta, mu, delta)
+    
+    def logpdf(self, x):
+        scipy_alpha = delta * alpha
+        scipy_beta = delta * beta
+        return norminvgauss.logpdf(x, scipy_alpha, scipy_beta, mu, delta)

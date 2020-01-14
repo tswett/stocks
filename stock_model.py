@@ -2,7 +2,7 @@ from distributions import NigDistribution
 import math
 from matplotlib import pyplot
 import numpy
-from scipy.stats import norm, norminvgauss
+from scipy.stats import norm
 from scipy.optimize import minimize
 
 class NigModel:
@@ -52,9 +52,7 @@ class NigModel:
         def evaluate(params):
             alpha, beta_over_alpha, mu, delta = params
             beta = beta_over_alpha * alpha
-            scipy_alpha = delta * alpha
-            scipy_beta = delta * beta
-            return -norminvgauss.logpdf(self.sorted_gains, scipy_alpha, scipy_beta, mu, delta).sum()
+            return -NigDistribution(alpha, beta, mu, delta).scipy_dist.logpdf(self.sorted_gains).sum()
         
         starting_point = [self.alpha, self.beta / self.alpha, self.mu, self.delta]
         bounds = [(0,None),(-1,1),(None,None),(None,None)]
@@ -69,17 +67,14 @@ class NigModel:
     
     def plot_comparison(self):
         dist = self.dist
-        
-        def cdf(x):
-            return norminvgauss.cdf(x, self.scipy_alpha, self.scipy_beta, self.mu, self.delta)
 
         pyplot.clf()
         pyplot.figure(figsize=(17,11))
         self.stock.plot_empirical_cdf()
-        pyplot.plot(self.sorted_gains, cdf(self.sorted_gains))
+        pyplot.plot(self.sorted_gains, self.dist.scipy_dist.cdf(self.sorted_gains))
         pyplot.show()
         
     def scipy_stats(self):
         dist = self.dist
         
-        return norminvgauss.stats(self.scipy_alpha, self.scipy_beta, self.mu, self.delta, moments='mvsk')
+        return self.dist.scipy_dist.stats(moments='mvsk')
