@@ -3,6 +3,7 @@ import numpy
 import pandas
 
 class Stock:
+    """Gain data for a particular stock, security or index."""
     def __init__(self, symbol, input_frame):
         self.symbol = symbol
         self.log_pct_gain = input_frame.log_pct_gain

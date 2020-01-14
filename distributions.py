@@ -2,6 +2,7 @@ import math
 from scipy.stats import norminvgauss
 
 class NigDistribution:
+    """A particular normal-inverse Gaussian distribution."""
     def __init__(self, alpha, beta, mu, delta):
         self.alpha = alpha
         self.beta = beta

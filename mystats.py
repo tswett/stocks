@@ -1,7 +1,19 @@
 import math, pandas
 
 class Summary():
+    """Statistical summary information about a time series."""
     def __init__(self, x_series, days_series, adjust_for_days=False):
+        """Create a Summary a value series and a length-of-time series.
+        
+        The x_series parameter contains the values of the series. The
+        days_series parameter indicates the number of days that each value
+        corresponds to.
+        
+        If adjust_for_days is True, then the summary statistics will be
+        calculated using the total number of days, in order to give per-day
+        statistics. If adjust_for_days is False, then days_series will be
+        ignored when calculating the summary statistics.
+        """
         self.dataframe = df = pandas.DataFrame({'days': days_series, 'x': x_series})
         
         if adjust_for_days:

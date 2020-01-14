@@ -6,6 +6,10 @@ from scipy.stats import norm, norminvgauss
 from scipy.optimize import minimize
 
 class NigModel:
+    """A normal-inverse Gaussian model of a particular stock, security or index.
+    
+    A NigModel consists of a NigDistribution and a Stock.
+    """
     def __init__(self, dist, stock):
         self.dist = dist
         self.stock = stock
