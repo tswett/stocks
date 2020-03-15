@@ -16,7 +16,7 @@ class Stock:
     def plot_empirical_cdf(self):
         self.summary.plot_empirical_cdf()
 
-def import_spy_weekly():
+def import_spy_weekly() -> Stock:
     spy_weekly = pandas.read_csv('SPY.csv', parse_dates=['Date'])
 
     spy_weekly['log_pct_gain'] = 100 * numpy.log(spy_weekly['Adj Close']).diff()
