@@ -9,10 +9,15 @@ class NigModel:
     """A normal-inverse Gaussian model of a particular stock, security or index.
     
     A NigModel consists of a NigDistribution and a Stock.
+    
+    Attributes:
+        dist   - the NigDistribution underlying this model
+        stock  - the Stock underlying this model
     """
     def __init__(self, dist, stock):
         self.dist = dist
         self.stock = stock
+        """Test"""
         
         self.alpha = dist.alpha
         self.beta = dist.beta

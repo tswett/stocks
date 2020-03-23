@@ -1,4 +1,6 @@
 import math
+from matplotlib import pyplot
+import numpy
 from scipy.stats import norminvgauss
 
 class NigDistribution:
@@ -19,9 +21,12 @@ class NigDistribution:
         # Moment formulas from Wikipedia.
         self.mean = mu + delta * beta / gamma
         self.variance = delta * alpha**2 / gamma**3
-        self.stddev = math.sqrt(self.variance)
         self.skewness = 3 * beta / alpha / math.sqrt(delta * gamma)
         self.kurtosis = 3 + 3 * (1 + 4 * beta**2 / alpha**2) / delta / gamma
+        
+        self.stddev = math.sqrt(self.variance)
+        self.kappa_3 = self.skewness * self.stddev**3
+        self.kappa_4 = (self.kurtosis - 3) * self.stddev**4
         
         # Extra variables...
         self.rho = self.alpha**2 / self.beta**2
@@ -43,3 +48,10 @@ class NigDistribution:
         scipy_alpha = delta * alpha
         scipy_beta = delta * beta
         return norminvgauss.logpdf(x, scipy_alpha, scipy_beta, mu, delta)
+    
+    def plot_cdf(self, start, stop):
+        pyplot.clf()
+        #pyplot.figure(figsize=(17,11))
+        space = numpy.linspace(start, stop, 1000)
+        pyplot.plot(space, self.scipy_dist.cdf(space))
+        pyplot.show()
